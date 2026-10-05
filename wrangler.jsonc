@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yakusoku",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "yakusoku",
+      // `wrangler d1 create yakusoku` で発行された ID に置き換える
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    // LIFF アプリを作成した LINE ログインチャネルのチャネル ID（ID トークン検証に使う）
+    "LINE_CHANNEL_ID": "",
+    // "1" のときだけ X-Dev-User ヘッダーでのなりすましログインを許可する（ローカル開発専用）
+    "DEV_AUTH": "0"
+  }
+}
