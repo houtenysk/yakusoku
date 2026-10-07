@@ -1,3 +1,4 @@
+import { confirmDialog } from "../dialog";
 import { useState } from "react";
 import type { PoolDetail, Promise_, Round, User } from "../../shared/types";
 import { api } from "../api";
@@ -37,7 +38,15 @@ export function PromiseCard({ pool, promise: p, me, onChange }: Props) {
       {p.status === "pending" &&
         (isParty && !myAgreed ? (
           <div className="row">
-            <button disabled={busy} onClick={() => confirm("この約束を断りますか？") && run(() => api.endPromise(p.id)).then(onChange)}>
+            <button
+              disabled={busy}
+              onClick={async () => {
+                if (await confirmDialog("この約束を断りますか？", { okLabel: "断る", danger: true })) {
+                  await run(() => api.endPromise(p.id));
+                  onChange();
+                }
+              }}
+            >
               断る
             </button>
             <button className="primary" disabled={busy} onClick={() => run(() => api.agree(p.id)).then(onChange)}>
@@ -77,9 +86,12 @@ export function PromiseCard({ pool, promise: p, me, onChange }: Props) {
         <button
           className="link small"
           disabled={busy}
-          onClick={() =>
-            confirm("この約束をやめますか？（今の回の判定は残ります）") && run(() => api.endPromise(p.id)).then(onChange)
-          }
+          onClick={async () => {
+            if (await confirmDialog("この約束をやめますか？（今の回の判定は残ります）", { okLabel: "やめる", danger: true })) {
+              await run(() => api.endPromise(p.id));
+              onChange();
+            }
+          }}
         >
           約束をやめる
         </button>
@@ -97,10 +109,10 @@ function CurrentRound({ pool, promise: p, round, me, onChange }: Props & { round
   const judge = async (result: "pass" | "fail") => {
     const s = score.trim() === "" ? null : Number(score);
     const label = result === "pass" ? "達成" : `未達成（罰金 ${yen(p.penaltyAmount)}）`;
-    if (!confirm(`第${round.seq}回を「${label}」にしますか？`)) return;
+    if (!(await confirmDialog(`第${round.seq}回を「${label}」にしますか？`, { okLabel: "決定", danger: result === "fail" }))) return;
     const ok = await run(() => api.judge(round.id, { result, score: s, note }));
     if (!ok) return;
-    if (confirm("結果を LINE で知らせますか？")) await shareText(await judgedMessage(pool, p, round, result, s));
+    if (await confirmDialog("結果を LINE で知らせますか？", { okLabel: "送る", cancelLabel: "送らない" })) await shareText(await judgedMessage(pool, p, round, result, s));
     onChange();
   };
 

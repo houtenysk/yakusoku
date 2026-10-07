@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
-import { DEV_AUTH, DEV_USERS, getDevUser, initPlatform, setDevUser } from "./platform";
+import { useEffect, useState, type ReactNode } from "react";
+import { DialogHost } from "./dialog";
+import { DEMO, DEV_AUTH, DEV_USERS, getDevUser, initPlatform, setDevUser } from "./platform";
 import { navigate, useRoute } from "./router";
 import { HomePage } from "./pages/Home";
 import { InvitePage } from "./pages/Invite";
 import { PoolPage } from "./pages/Pool";
 import { SettingsPage } from "./pages/Settings";
 
-export function App() {
+// banner: お試し版の案内など、画面の一番上に出すもの
+export function App({ banner }: { banner?: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   // 開発用ユーザーを切り替えたら画面ごと作り直す
@@ -25,10 +27,12 @@ export function App() {
 
   return (
     <div className="screen" key={devUser}>
+      {banner}
       {DEV_AUTH && (
         <div className="devbar">
-          開発用ユーザー：
+          <label htmlFor="dev-user">{DEMO ? "表示するユーザー" : "開発用ユーザー"}</label>
           <select
+            id="dev-user"
             value={devUser}
             onChange={(e) => {
               setDevUser(e.target.value);
@@ -63,6 +67,7 @@ export function App() {
         {route.page === "pool" && <PoolPage id={route.id} />}
         {route.page === "invite" && <InvitePage code={route.code} />}
       </main>
+      <DialogHost />
     </div>
   );
 }

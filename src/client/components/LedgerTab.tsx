@@ -1,3 +1,4 @@
+import { confirmDialog } from "../dialog";
 import { useState } from "react";
 import type { LedgerEntry, PoolDetail, User } from "../../shared/types";
 import { api } from "../api";
@@ -103,7 +104,12 @@ function EntryRow({
           <button
             className="link small"
             disabled={busy}
-            onClick={() => confirm("この記録を取り消しますか？") && run(() => api.voidEntry(e.id)).then(onChange)}
+            onClick={async () => {
+              if (await confirmDialog("この記録を取り消しますか？", { okLabel: "取り消す", danger: true })) {
+                await run(() => api.voidEntry(e.id));
+                onChange();
+              }
+            }}
           >
             取り消す
           </button>

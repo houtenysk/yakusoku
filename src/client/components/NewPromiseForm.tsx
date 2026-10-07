@@ -1,3 +1,4 @@
+import { confirmDialog } from "../dialog";
 import { useState } from "react";
 import type { Cadence, PoolDetail, User } from "../../shared/types";
 import { MAX_PENALTY } from "../../shared/validation";
@@ -36,7 +37,10 @@ export function NewPromiseForm({ pool, me, onDone }: { pool: PoolDetail; me: Use
           const { id } = await api.createPromise(pool.id, input);
           const fresh = await api.pool(pool.id);
           const created = fresh.promises.find((p) => p.id === id);
-          if (created && confirm("相手に同意をお願いするメッセージを LINE で送りますか？")) {
+          if (
+            created &&
+            (await confirmDialog("相手に同意をお願いするメッセージを LINE で送りますか？", { okLabel: "送る", cancelLabel: "送らない" }))
+          ) {
             await shareText(await agreeRequestMessage(fresh, created));
           }
           onDone();

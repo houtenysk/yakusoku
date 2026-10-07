@@ -12,7 +12,8 @@
     "test": "vitest run",
     "db:migrate:local": "wrangler d1 migrations apply yakusoku --local",
     "db:migrate:remote": "wrangler d1 migrations apply yakusoku --remote",
-    "cf-typegen": "wrangler types src/worker/worker-configuration.d.ts"
+    "cf-typegen": "wrangler types src/worker/worker-configuration.d.ts",
+    "build:demo": "vite build -c vite.demo.config.ts && node scripts/build-demo.mjs"
   },
   "dependencies": {
     "@line/liff": "^2.31.1",
@@ -25,7 +26,9 @@
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@types/sql.js": "^1.4.11",
     "@vitejs/plugin-react": "^6.1.2",
+    "sql.js": "^1.14.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.2",
     "vitest": "^5.0.3",

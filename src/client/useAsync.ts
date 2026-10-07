@@ -1,3 +1,4 @@
+import { notify } from "./dialog";
 import { useCallback, useEffect, useState } from "react";
 
 // 読み込み → 表示 → 操作後に再読み込み、の流れを扱う
@@ -31,7 +32,7 @@ export function useAction() {
       await fn();
       return true;
     } catch (e) {
-      alert((e as Error).message);
+      await notify((e as Error).message);
       return false;
     } finally {
       setBusy(false);

@@ -1,9 +1,12 @@
 import liff from "@line/liff";
+import { notify, showText } from "./dialog";
 
 // LINE（LIFF）に依存する処理をまとめる。VITE_DEV_AUTH=1 のときは LIFF を使わず、
 // 画面上で選んだ開発用ユーザーとしてブラウザだけで動かす
 
 export const DEV_AUTH = import.meta.env.VITE_DEV_AUTH === "1";
+// ブラウザだけで動くお試し版（src/demo）。DEV_AUTH と組み合わせて使う
+export const DEMO = import.meta.env.VITE_DEMO === "1";
 const LIFF_ID: string = import.meta.env.VITE_LIFF_ID ?? "";
 
 export const DEV_USERS = [
@@ -55,6 +58,8 @@ export function authHeaders(): Record<string, string> {
 // 招待リンク。LINE ミニアプリとして開けるパーマネントリンクにする
 export async function inviteUrl(code: string): Promise<string> {
   const endpoint = `${location.origin}/?invite=${encodeURIComponent(code)}`;
+  // お試し版の招待リンクは見本（実際のアプリでは LINE ミニアプリのリンクになる）
+  if (DEMO) return `https://miniapp.line.me/（LIFF ID）?invite=${encodeURIComponent(code)}`;
   if (DEV_AUTH) return endpoint;
   try {
     return await liff.permanentLink.createUrlBy(endpoint);
@@ -66,11 +71,19 @@ export async function inviteUrl(code: string): Promise<string> {
 // LINE のトークへメッセージを送る（送り先は本人が選ぶ）。送れなかったらクリップボードにコピーする。
 // 戻り値: "shared" 送信した / "copied" コピーした / "cancelled" 何もしなかった
 export async function shareText(text: string): Promise<"shared" | "copied" | "cancelled"> {
+  if (DEMO) {
+    await showText("LINE に送るメッセージ", text, "お試し版では送信せず、送られる内容だけを表示します。");
+    return "cancelled";
+  }
   if (!DEV_AUTH && liff.isApiAvailable("shareTargetPicker")) {
     const res = await liff.shareTargetPicker([{ type: "text", text }]);
     return res ? "shared" : "cancelled";
   }
-  return (await copyText(text)) ? "copied" : "cancelled";
+  if (await copyText(text)) {
+    await notify("メッセージをコピーしました。LINE のトークに貼り付けて送ってください。");
+    return "copied";
+  }
+  return "cancelled";
 }
 
 export async function copyText(text: string): Promise<boolean> {
@@ -78,7 +91,7 @@ export async function copyText(text: string): Promise<boolean> {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    window.prompt("コピーしてください", text);
+    await showText("コピーしてください", text);
     return false;
   }
 }
@@ -86,6 +99,10 @@ export async function copyText(text: string): Promise<boolean> {
 // PayPay アプリを開く。外部アプリへの遷移は LINE 内ブラウザでは openWindow の external で行う。
 // paypay:// で送金画面まで開けるかは公式には公開されていないため、実機での確認が必要
 export function openPayPay() {
+  if (DEMO) {
+    void notify("お試し版では PayPay は開きません。実際のアプリでは、ここで PayPay アプリに切り替わります。");
+    return;
+  }
   const url = "paypay://";
   if (!DEV_AUTH && liff.isInClient()) {
     liff.openWindow({ url, external: true });

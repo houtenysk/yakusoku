@@ -1,3 +1,4 @@
+import { notify } from "../dialog";
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { useAction, useAsync } from "../useAsync";
@@ -23,7 +24,7 @@ export function SettingsPage() {
           e.preventDefault();
           if (await run(() => api.updateMe(paypayId))) {
             reload();
-            alert("保存しました");
+            await notify("保存しました");
           }
         }}
       >

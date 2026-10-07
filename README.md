@@ -42,6 +42,14 @@ npm test           # 帳簿の集計と API のテスト（ローカルの D1 �
 npm run typecheck
 ```
 
+## お試し版（ブラウザだけで動く 1 枚の HTML）
+
+```sh
+npm run build:demo   # dist-demo/yakusoku-demo.html ができる
+```
+
+サーバー（`src/worker`）とデータベース（SQLite）をブラウザの中で動かす版です（`src/demo`）。LINE への送信と PayPay の起動はせず、データはそのブラウザにだけ保存されます。サンプルのプールと約束が入った状態で始まります。
+
 ## LINE ミニアプリとして公開する
 
 1. **Cloudflare**
